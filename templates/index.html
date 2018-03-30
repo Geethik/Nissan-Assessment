@@ -1,0 +1,50 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+    <script src='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet' />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+    
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+    
+    <title>Nissan Assessment</title>
+  </head>
+  <body>
+      <div id='map'></div>
+      <script>
+        //Instantiate map and the marker
+        L.mapbox.accessToken = 'pk.eyJ1IjoiZGlsaXBrIiwiYSI6ImNqY3BjYXUyaDJrOWkzMHBmOXBtcDdoMTIifQ.uyCGK1GTxd6grnCKjAskDQ';
+        var map = L.mapbox.map('map', 'mapbox.streets').setView([40, -74.50], 7);
+        var marker = L.marker([40, -74.5], {icon: L.mapbox.marker.icon({'marker-color': '#f86767'}) });
+
+        $(document).ready(function() {
+            //Connect to MQTT using socketio and update the marker
+            
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+            var lat = 30;
+            var lon = -96;
+            
+            //SocketIO function to update
+            socket.on('mqtt_message', function(data) {
+                var text = data['payload'];
+                text = JSON.parse(text);
+                console.log(text.lat);
+                lat = text.lat;
+                lon = text.lon;
+                marker.setLatLng(L.latLng(lat, lon));
+                map.setView([lat,lon],7)
+            })
+            marker.addTo(map);
+        });
+        
+    </script>
+    
+  </body>
+</html>
